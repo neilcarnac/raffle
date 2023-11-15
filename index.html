@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Theme-based Tambola Tickets</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.2/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+</head>
+<body>
+    <h1>Theme-based Tambola Tickets Generator</h1>
+    <label for="theme">Select a theme:</label>
+    <select id="theme">
+        <option value="beach">AHWB</option>
+        <!-- Add more theme options here -->
+    </select>
+    <br><br>
+    <label for="blankCount">Number of Blank Cells:</label>
+    <input type="number" id="blankCount" min="0" value="0">
+    <br><br>
+    <button id="generateTicket">Generate Tickets</button>
+    <br><br>
+    <div id="ticketContainer"></div>
+
+    <button id="exportToExcel">Export to Excel</button>
+    <button id="exportToPDF">Export to PDF (3 Tickets on A4)</button>
+
+    <script>
+        var tickets; // Define the tickets variable outside the event listener
+
+        function getThemeItems(theme) {
+            var themes = {
+    "beach": ["It's the time to Disco", "Sham Dhale", "Senorita", "Hai Apna Dil to Awaara", "Aankhon Mein Tari", "Shola Jo Badhke", "Deewangi Deewangi", "Saiyan Dil Mein Aana Re", "Chale Jaise Hawa", "Sar Jo Tera Chakraye", "Pretty Woman", "Koi Kahe kethta Rahe", "Yeh Hai Bombay Meri Jaan", "London Thumakda", "Uden Jab Jab Zulfein", "Ram Chahe leela Chahe", "Mere Sapno Ki Rani", "Kesariya", "Chura Liye Hai", "Ke Ghoongroo Toot Gaye", "Bholi Surat Dil Ke Khote", "Maahi Ve", "Mere Saamne Waali Khidki", "Dus Bahane", "Chod Do Anchal", "Radha", "Aajkal tere mere Pyaar ke charche", "Gallan Goodiyaan", "Amar Akbar Anthony", "Rock n Roll Soniye", "Kajra Mohabbatwalla", "Sooraj Dooba", "Tum Hi Ho Bandhu", "Break up Song", "Tu Mere Agal Bagal", "Gore Gore", "Balam Pichkari", "Tarif Karoon Kya Iski", "Yeh Dosti", "The Disco Song", "Bom Diggy Diggy", "Battameez Dil", "Slow Motion Angreza", "Beedi","Zindagi Milke Bitayenge"]
+};
+
+
+            return themes[theme] || [];
+        }
+
+        document.getElementById("generateTicket").addEventListener("click", function () {
+            var theme = document.getElementById("theme").value;
+            var ticketRows = 3;
+            var ticketCols = 9;
+            var themeItems = getThemeItems(theme);
+            var blankCount = parseInt(document.getElementById("blankCount").value);
+
+            if (themeItems.length < ticketRows * ticketCols + blankCount) {
+                alert("Not enough theme items for the selected ticket size and blank count.");
+                return;
+            }
+
+            var numTickets = 130; // Number of tickets to generate
+            tickets = generateTambolaTickets(numTickets, ticketRows, ticketCols, themeItems, blankCount);
+            displayTickets(tickets, ticketRows, ticketCols);
+        });
+
+        function generateTambolaTickets(numTickets, rows, cols, themeItems, blankCount) {
+    var generatedTickets = [];
+
+    for (var t = 0; t < numTickets; t++) {
+        var ticket = [];
+        var shuffledItems = themeItems.slice(); // Copy the theme items array
+
+        // Calculate the number of items per row (including blank cells)
+        var itemsPerRow = Math.floor((themeItems.length + blankCount) / rows);
+
+        // Calculate the number of blank cells per row
+        var blanksPerRow = Math.floor(blankCount / rows);
+
+        for (var i = 0; i < rows; i++) {
+            var row = [];
+            var rowItemsCount = itemsPerRow;
+            var rowBlankCount = blanksPerRow;
+
+            if (i === rows - 1) {
+                // Adjust for any remaining items and blank cells in the last row
+                rowItemsCount += (themeItems.length + blankCount) % rows;
+                rowBlankCount += blankCount % rows;
+            }
+
+            for (var j = 0; j < rowItemsCount; j++) {
+                if (rowBlankCount > 0 && Math.random() < 0.5) {
+                    row.push("");
+                    rowBlankCount--;
+                } else if (shuffledItems.length > 0) {
+                    var item = shuffledItems.splice(Math.floor(Math.random() * shuffledItems.length), 1)[0];
+                    row.push(item);
+                }
+            }
+
+            ticket.push(row);
+        }
+
+        generatedTickets.push(ticket);
+    }
+
+    return generatedTickets;
+}
+
+
+
+
+        function displayTickets(tickets, rows, cols) {
+            var ticketContainer = document.getElementById("ticketContainer");
+            ticketContainer.innerHTML = "";
+
+            for (var t = 0; t < tickets.length; t++) {
+                var ticketDiv = document.createElement("div");
+                ticketDiv.className = "ticket";
+                ticketDiv.innerHTML = "<h3>A.H.W.B. Welfare Centre - 50 Years Celebration  Ticket " + (t + 1) + "</h3>";
+                for (var i = 0; i < rows; i++) {
+                    var rowDiv = document.createElement("div");
+                    rowDiv.className = "row";
+                    for (var j = 0; j < cols; j++) {
+                        var cellDiv = document.createElement("div");
+                        cellDiv.className = "cell";
+                        cellDiv.textContent = tickets[t][i][j];
+                        rowDiv.appendChild(cellDiv);
+                    }
+                    ticketDiv.appendChild(rowDiv);
+                }
+                ticketContainer.appendChild(ticketDiv);
+            }
+        }
+
+        function exportToExcel(tickets, theme) {
+            var workbook = XLSX.utils.book_new();
+            var worksheet = XLSX.utils.aoa_to_sheet([["Theme: " + theme]]);
+            
+            tickets.forEach(function (ticket, index) {
+                var ticketData = [["Ticket " + (index + 1)]];
+                for (var i = 0; i < ticket.length; i++) {
+                    var row = [];
+                    for (var j = 0; j < ticket[i].length; j++) {
+                        row.push(ticket[i][j]);
+                    }
+                    ticketData.push(row);
+                }
+                worksheet = XLSX.utils.book_append_sheet(workbook, XLSX.utils.aoa_to_sheet(ticketData), "Ticket " + (index + 1));
+            });
+            
+            XLSX.writeFile(workbook, "TambolaTickets.xlsx");
+        }
+
+        function exportToPDF(tickets, theme, ticketsPerPage) {
+            if (typeof jsPDF !== 'undefined') {
+                var doc = new jsPDF();
+
+                tickets.forEach(function (ticket, index) {
+                    if (index % ticketsPerPage === 0 && index !== 0) {
+                        doc.addPage();
+                    }
+
+                    doc.text("Ticket " + (index + 1), 10, 10);
+                    var yOffset = 20;
+
+                    for (var i = 0; i < ticket.length; i++) {
+                        for (var j = 0; j < ticket[i].length; j++) {
+                            doc.text(ticket[i][j], 10 + j * 40, yOffset + i * 10);
+                        }
+                    }
+
+                    yOffset += ticket.length * 10 + 10;
+                });
+
+                doc.save("TambolaTickets.pdf");
+            } else {
+                console.error("jsPDF library not found. Make sure it is included.");
+            }
+        }
+
+        document.getElementById("exportToExcel").addEventListener("click", function () {
+            var theme = document.getElementById("theme").value;
+            exportToExcel(tickets, theme);
+        });
+
+        document.getElementById("exportToPDF").addEventListener("click", function () {
+            var theme = document.getElementById("theme").value;
+            exportToPDF(tickets, theme, 3); // Change 3 to the desired number of tickets per page
+        });
+    </script>
+
+    <style>
+        .ticket {
+            border: 1px solid #000;
+            margin: 10px;
+            padding: 10px;
+            display: inline-block;
+        }
+
+        .row {
+            display: flex;
+        }
+
+        .cell {
+            flex: 1;
+            border: 1px solid #000;
+            text-align: center;
+            padding: 5px;
+            padding-top: 25px;
+            height: 120px;
+            width: 120px;
+            font-size: 1.3rem; /* Adjusted font size */
+
+        }
+    </style>
+</body>
+</html>
