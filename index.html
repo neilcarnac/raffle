@@ -22,7 +22,7 @@
     <div id="ticketContainer"></div>
 
     <button id="exportToExcel">Export to Excel</button>
-    <button id="exportToPDF">Export to PDF (3 Tickets on A4)</button>
+    <button id="printPage">Print Page</button>
 
     <script>
         var tickets; // Define the tickets variable outside the event listener
@@ -97,9 +97,12 @@
 }
 
 
-
+document.getElementById("printPage").addEventListener("click", function () {
+        window.print();
+    });
 
         function displayTickets(tickets, rows, cols) {
+            
             var ticketContainer = document.getElementById("ticketContainer");
             ticketContainer.innerHTML = "";
 
