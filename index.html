@@ -4,6 +4,7 @@
     <title>Theme-based Tambola Tickets</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.2/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
 </head>
 <body>
     <h1>Theme-based Tambola Tickets Generator</h1>
@@ -21,6 +22,7 @@
     <div id="ticketContainer"></div>
 
     <button id="exportToExcel">Export to Excel</button>
+    <button id="exportToPDF">Export to PDF (3 Tickets on A4)</button>
 
     <script>
         var tickets; // Define the tickets variable outside the event listener
@@ -139,7 +141,42 @@
             XLSX.writeFile(workbook, "TambolaTickets.xlsx");
         }
 
-        
+        function exportToPDF(tickets, theme, ticketsPerPage) {
+            if (typeof jsPDF !== 'undefined') {
+                var doc = new jsPDF();
+
+                tickets.forEach(function (ticket, index) {
+                    if (index % ticketsPerPage === 0 && index !== 0) {
+                        doc.addPage();
+                    }
+
+                    doc.text("Ticket " + (index + 1), 10, 10);
+                    var yOffset = 20;
+
+                    for (var i = 0; i < ticket.length; i++) {
+                        for (var j = 0; j < ticket[i].length; j++) {
+                            doc.text(ticket[i][j], 10 + j * 40, yOffset + i * 10);
+                        }
+                    }
+
+                    yOffset += ticket.length * 10 + 10;
+                });
+
+                doc.save("TambolaTickets.pdf");
+            } else {
+                console.error("jsPDF library not found. Make sure it is included.");
+            }
+        }
+
+        document.getElementById("exportToExcel").addEventListener("click", function () {
+            var theme = document.getElementById("theme").value;
+            exportToExcel(tickets, theme);
+        });
+
+        document.getElementById("exportToPDF").addEventListener("click", function () {
+            var theme = document.getElementById("theme").value;
+            exportToPDF(tickets, theme, 3); // Change 3 to the desired number of tickets per page
+        });
     </script>
 
     <style>
