@@ -8,18 +8,26 @@
   </head>
   <body>
     <h1>Theme-based Tambola Tickets Generator</h1>
-    <label for="theme">Select a theme:</label>
+    <div class="pints">
+        <button id="printPage">Print Page</button>
+        <B>Printing details:</B><br />
+           <p>Layout: Landscape.<br />
+            Paper Size: A4.<br />
+            Pages per sheet: 1.<br />
+            Options: No Headers & Footers
+        </p>
+    </div>
+    <label for="theme">Select a theme:</label> <br />
     <select id="theme">
       <option value="beach">AHWB</option>
       <!-- Add more theme options here -->
-    </select>
-    <br /><br />
+    </select><br /><br />
+    
     <button id="generateTicket">Generate Tickets</button>
     <br /><br />
     <div id="ticketContainer"></div>
 
     <button id="exportToExcel">Export to Excel</button>
-    <button id="printPage">Print Page</button>
 
     <script>
       var tickets; // Define the tickets variable outside the event listener
@@ -146,6 +154,8 @@
           var ticketDiv = document.createElement("div");
           ticketDiv.className = "ticket";
           ticketDiv.innerHTML =
+          '<img id="photo" src="wb.png" style="width: 140px; padding-top:10px; height: 140px;" alt="Logo">'
+          +
             "<h3>A.H.W.B. Welfare Centre - 50 Years Celebration  Ticket " +
             (t + 1) +
             "</h3>";
@@ -240,7 +250,7 @@
       .row {
         display: flex;
       }
-
+      
       .cell {
         flex: 1;
         border: 1px solid #000;
@@ -251,6 +261,6 @@
         width: 120px;
         font-size: 1.2rem; /* Adjusted font size */
       }
-    </style>
+      </style>
   </body>
 </html>
